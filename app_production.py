@@ -321,16 +321,6 @@ if __name__ == "__main__":
                 outputs=health_output
             )
     
-    # Create custom route for /health endpoint
-    @demo.server.route("/health", methods=["GET"])
-    def health_endpoint():
-        from flask import Response
-        return Response(
-            health_check_api(),
-            mimetype='application/json',
-            status=200
-        )
-    
     # Queue configuration for Gradio
     demo.queue(
         max_size=50,
@@ -341,14 +331,14 @@ if __name__ == "__main__":
     print("🎙️  Chatterbox TTS Server Starting...")
     print("=" * 60)
     print(f"📍 Server: http://{HOST}:{PORT}")
-    print(f"🏥 Health Check: http://{HOST}:{PORT}/health")
+    print(f"🏥 Health Check: http://{HOST}:{PORT}/ (Health Check tab)")
     print(f"📚 Gradio API Docs: http://{HOST}:{PORT}/api/docs")
     print(f"🎤 TTS API: http://{HOST}:{PORT}/api/predict")
     print(f"🌍 Multilingual API: http://{HOST}:{PORT}/api/multilingual")
     print(f"🔄 Voice Conversion: http://{HOST}:{PORT}/api/convert_voice")
     print("=" * 60)
     
-    # Launch Gradio with custom routes
+    # Launch Gradio
     demo.launch(
         server_name=HOST,
         server_port=PORT,

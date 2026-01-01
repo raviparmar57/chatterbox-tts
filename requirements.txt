@@ -12,3 +12,4 @@ pykakasi==2.3.0
 gradio==5.44.1
 setuptools>=65.5.0
 psutil>=5.9.0
+flask>=3.0.0
