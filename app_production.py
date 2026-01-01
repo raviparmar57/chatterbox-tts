@@ -315,11 +315,10 @@ if __name__ == "__main__":
                 outputs=health_output
             )
             
-            # Auto-refresh every 30 seconds
+            # Load health status on page load
             demo.load(
                 fn=lambda: json.loads(health_check_api()),
-                outputs=health_output,
-                every=30
+                outputs=health_output
             )
     
     # Create custom route for /health endpoint
