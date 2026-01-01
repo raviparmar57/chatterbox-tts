@@ -1,0 +1,363 @@
+################################################################################
+# Chatterbox TTS - Comprehensive .gitignore
+################################################################################
+
+# ============================================================================
+# Python
+# ============================================================================
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+.ruff_cache/
+
+# Translations
+*.mo
+*.pot
+
+# Logs
+*.log
+local_settings.py
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb
+
+# IPython
+profile_default/
+ipython_config.py
+
+# pyenv
+.python-version
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+pythonenv*
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# pytype static type analyzer
+.pytype/
+
+# Cython debug symbols
+cython_debug/
+
+# Pylance
+pyrightconfig.json
+
+# ============================================================================
+# Machine Learning / PyTorch / AI Models
+# ============================================================================
+# Model files (usually large binary files)
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.bin
+*.onnx
+*.pb
+*.h5
+*.hdf5
+*.pkl
+*.pickle
+*.joblib
+
+# Model directories
+models/
+checkpoints/
+saved_models/
+pretrained_models/
+weights/
+
+# Hugging Face cache
+.cache/
+.huggingface/
+transformers_cache/
+
+# Training outputs
+syn_out/
+outputs/
+runs/
+logs/
+tensorboard/
+tb_logs/
+
+# Weights & Biases
+wandb/
+
+# MLflow
+mlruns/
+
+# ============================================================================
+# Audio Files (Generated TTS outputs)
+# ============================================================================
+# Ignore all .wav files by default
+**/*.wav
+# EXCEPT voice samples in the samples directory
+!modules/voice_samples/*.wav
+!modules/voice_samples/**/*.wav
+
+# Other generated audio formats
+generated/
+temp_audio/
+test_audio/
+*.mp3
+*.flac
+*.ogg
+*.m4a
+
+# ============================================================================
+# Gradio Specific
+# ============================================================================
+# Gradio cache and temporary files
+.gradio/
+gradio_cached_examples/
+flagged/
+# Keep certificate if needed for development
+!.gradio/certificate.pem
+
+# ============================================================================
+# Deployment & Server
+# ============================================================================
+# Server logs
+logs/
+/var/log/
+
+# Process IDs
+*.pid
+
+# System service files (auto-generated)
+*.service
+
+# SSL/TLS certificates (except sample/dev certs)
+*.key
+*.crt
+*.pem
+!.gradio/certificate.pem
+
+# Nginx configs (if auto-generated)
+nginx.conf
+*.nginx
+
+# ============================================================================
+# Development & IDE
+# ============================================================================
+# VSCode
+.vscode/
+*.code-workspace
+.history/
+
+# PyCharm
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+.vim/
+
+# Emacs
+*~
+\#*\#
+.\#*
+
+# ============================================================================
+# Operating System
+# ============================================================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Linux
+*~
+.directory
+.Trash-*
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# ============================================================================
+# Temporary & Test Files
+# ============================================================================
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+tmp_*
+temp_*
+tmp_rovodev_*
+
+# Test outputs
+test_outputs/
+test_results/
+
+# Debug files
+debug/
+debug_output/
+
+# Backup files
+*.bak
+*.backup
+*.orig
+
+# ============================================================================
+# Configuration & Secrets
+# ============================================================================
+# Environment variables and secrets
+.env
+.env.local
+.env.*.local
+secrets.py
+secrets.json
+config.local.py
+config.local.json
+credentials.json
+*.secret
+
+# API keys
+api_keys.txt
+
+# ============================================================================
+# Package Manager
+# ============================================================================
+# npm (if using JavaScript clients)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+# ============================================================================
+# Cloud & Deployment
+# ============================================================================
+# Docker
+.dockerignore
+Dockerfile.local
+
+# Kubernetes
+*.kubeconfig
+
+# Terraform
+*.tfstate
+*.tfstate.backup
+.terraform/
+
+# ============================================================================
+# Miscellaneous
+# ============================================================================
+# Archives
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.rar
+*.7z
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Cache
+*.cache
+cache/
+
+# ============================================================================
+# Project Specific - Keep Important Files
+# ============================================================================
+# Keep deployment scripts
+!deploy_scripts/
+!deploy_scripts/*.sh
+!deploy_scripts/*.py
+
+# Keep documentation
+!README.md
+!DEPLOYMENT_GUIDE.md
+!requirements.txt
+
+# Keep example configurations
+!*.example
+!*.sample
