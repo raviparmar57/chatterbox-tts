@@ -450,8 +450,15 @@ if __name__ == "__main__":
     PORT = int(os.getenv("GRADIO_SERVER_PORT", "7860"))
     HOST = os.getenv("GRADIO_SERVER_NAME", "0.0.0.0")
     
-    # Mount Gradio app on FastAPI
-    demo_app = gr.mount_gradio_app(app, demo, path="/")
+    # Create Gradio blocks with queue
+    demo.queue(
+        max_size=50,
+        default_concurrency_limit=3,
+    )
+    
+    # Mount Gradio app on FastAPI at root path
+    # Gradio will handle /api/* routes automatically
+    app = gr.mount_gradio_app(app, demo, path="/", root_path="/")
     
     # Launch with uvicorn
     import uvicorn
@@ -463,10 +470,12 @@ if __name__ == "__main__":
     print(f"🏥 Health Check: http://{HOST}:{PORT}/health")
     print(f"📖 API Docs (Swagger): http://{HOST}:{PORT}/api/swagger")
     print(f"📚 Gradio API Docs: http://{HOST}:{PORT}/api/docs")
+    print(f"🎤 TTS API: http://{HOST}:{PORT}/api/predict")
+    print(f"🌍 Multilingual API: http://{HOST}:{PORT}/api/multilingual")
     print("=" * 60)
     
     uvicorn.run(
-        demo_app,
+        app,
         host=HOST,
         port=PORT,
         log_level="info"
