@@ -17,20 +17,6 @@ log_message "=========================================="
 # Wait for network to be ready
 sleep 30
 
-# Get current pod name from OpenShift (not hostname)
-POD_NAME=$(oc get pods -o name | grep centos | head -1)
-log_message "📍 Pod Name (raw): $POD_NAME"
-
-# Extract just the pod name without 'pod/' prefix
-POD_NAME=${POD_NAME#pod/}
-log_message "📍 Pod Name (clean): $POD_NAME"
-
-# Verify pod name is not empty
-if [ -z "$POD_NAME" ]; then
-    log_message "❌ Could not detect pod name"
-    exit 1
-fi
-
 # Check if oc command is available
 if ! command -v oc &> /dev/null; then
     log_message "❌ oc command not found"
@@ -47,6 +33,20 @@ fi
 
 log_message "✅ Logged in as: $(oc whoami)"
 log_message "📂 Project: $(oc project -q)"
+
+# Get current pod name from OpenShift (not hostname)
+POD_NAME=$(oc get pods -o name | grep centos | head -1)
+log_message "📍 Pod Name (raw): $POD_NAME"
+
+# Extract just the pod name without 'pod/' prefix
+POD_NAME=${POD_NAME#pod/}
+log_message "📍 Pod Name (clean): $POD_NAME"
+
+# Verify pod name is not empty
+if [ -z "$POD_NAME" ]; then
+    log_message "❌ Could not detect pod name"
+    exit 1
+fi
 
 # Delete old service and route (ignore errors if not exist)
 log_message "🗑️  Deleting old service/route..."
