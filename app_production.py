@@ -247,9 +247,8 @@ with gr.Blocks(title="Chatterbox TTS Enhanced", theme=gr.themes.Soft()) as demo:
 if __name__ == "__main__":
     import time
     import psutil
+    import json
     from datetime import datetime
-    from flask import Flask, jsonify
-    import threading
     
     # Track application start time
     APP_START_TIME = time.time()
@@ -257,13 +256,9 @@ if __name__ == "__main__":
     # Production configuration with environment variable support
     PORT = int(os.getenv("GRADIO_SERVER_PORT", "7860"))
     HOST = os.getenv("GRADIO_SERVER_NAME", "0.0.0.0")
-    HEALTH_PORT = PORT + 1  # Health check on different port to avoid conflicts
     
-    # Create Flask app for health check
-    flask_app = Flask(__name__)
-    
-    @flask_app.route('/health')
-    def health_check():
+    # Health check function for Gradio API
+    def health_check_api():
         """Health check endpoint for monitoring and cron jobs"""
         try:
             current_time = time.time()
@@ -279,7 +274,7 @@ if __name__ == "__main__":
             uptime_minutes = int((uptime_seconds % 3600) // 60)
             uptime_str = f"{uptime_hours}h {uptime_minutes}m"
             
-            return jsonify({
+            health_data = {
                 "status": "healthy",
                 "timestamp": datetime.now().isoformat(),
                 "uptime_seconds": round(uptime_seconds, 2),
@@ -293,23 +288,49 @@ if __name__ == "__main__":
                 },
                 "voices_loaded": len(available_voices),
                 "service": "chatterbox-tts",
-                "version": "1.0.0",
-                "gradio_url": f"http://{HOST}:{PORT}"
-            })
+                "version": "1.0.0"
+            }
+            
+            return json.dumps(health_data, indent=2)
+            
         except Exception as e:
-            return jsonify({
+            error_data = {
                 "status": "unhealthy",
                 "error": str(e),
                 "timestamp": datetime.now().isoformat()
-            }), 500
+            }
+            return json.dumps(error_data, indent=2)
     
-    # Start Flask app in separate thread
-    def run_health_server():
-        from werkzeug.serving import run_simple
-        run_simple(HOST, HEALTH_PORT, flask_app, use_reloader=False, use_debugger=False)
+    # Add health check tab to demo
+    with demo:
+        with gr.Tab("🏥 Health Check"):
+            gr.Markdown("## Server Health Status")
+            gr.Markdown("Use `/health` endpoint for cron monitoring")
+            
+            health_output = gr.JSON(label="Current Status")
+            health_btn = gr.Button("Check Health", variant="primary")
+            
+            health_btn.click(
+                fn=lambda: json.loads(health_check_api()),
+                outputs=health_output
+            )
+            
+            # Auto-refresh every 30 seconds
+            demo.load(
+                fn=lambda: json.loads(health_check_api()),
+                outputs=health_output,
+                every=30
+            )
     
-    health_thread = threading.Thread(target=run_health_server, daemon=True)
-    health_thread.start()
+    # Create custom route for /health endpoint
+    @demo.server.route("/health", methods=["GET"])
+    def health_endpoint():
+        from flask import Response
+        return Response(
+            health_check_api(),
+            mimetype='application/json',
+            status=200
+        )
     
     # Queue configuration for Gradio
     demo.queue(
@@ -320,17 +341,15 @@ if __name__ == "__main__":
     print("=" * 60)
     print("🎙️  Chatterbox TTS Server Starting...")
     print("=" * 60)
-    print(f"📍 Gradio UI: http://{HOST}:{PORT}")
-    print(f"🏥 Health Check: http://{HOST}:{HEALTH_PORT}/health")
+    print(f"📍 Server: http://{HOST}:{PORT}")
+    print(f"🏥 Health Check: http://{HOST}:{PORT}/health")
     print(f"📚 Gradio API Docs: http://{HOST}:{PORT}/api/docs")
     print(f"🎤 TTS API: http://{HOST}:{PORT}/api/predict")
     print(f"🌍 Multilingual API: http://{HOST}:{PORT}/api/multilingual")
     print(f"🔄 Voice Conversion: http://{HOST}:{PORT}/api/convert_voice")
     print("=" * 60)
-    print(f"💡 For cron job, use: http://your-domain:{HEALTH_PORT}/health")
-    print("=" * 60)
     
-    # Launch Gradio
+    # Launch Gradio with custom routes
     demo.launch(
         server_name=HOST,
         server_port=PORT,
