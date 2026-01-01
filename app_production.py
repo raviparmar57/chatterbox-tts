@@ -3,6 +3,11 @@ Chatterbox TTS Enhanced - Production Deployment
 """
 import sys
 import os
+import time
+import psutil
+from datetime import datetime
+from fastapi import FastAPI, Response
+from fastapi.responses import JSONResponse, HTMLResponse
 
 # Project root for relative paths
 project_root = os.path.dirname(os.path.abspath(__file__))
@@ -34,8 +39,204 @@ from modules.ui_components import (
     create_clone_voice_tab
 )
 
+# Track application start time
+APP_START_TIME = time.time()
+
+# Create FastAPI app for custom endpoints
+app = FastAPI(title="Chatterbox TTS API", version="1.0.0")
+
 # Load voices at startup
 available_voices = load_voices()
+
+# ---------------------------
+# Custom API Endpoints
+# ---------------------------
+
+@app.get("/health", response_class=JSONResponse)
+async def health_check():
+    """
+    Health check endpoint for monitoring and cron jobs.
+    Returns server status, uptime, and resource usage.
+    """
+    try:
+        current_time = time.time()
+        uptime_seconds = current_time - APP_START_TIME
+        
+        # Get system stats
+        cpu_percent = psutil.cpu_percent(interval=0.1)
+        memory = psutil.virtual_memory()
+        disk = psutil.disk_usage('/')
+        
+        # Calculate uptime in human-readable format
+        uptime_hours = int(uptime_seconds // 3600)
+        uptime_minutes = int((uptime_seconds % 3600) // 60)
+        uptime_str = f"{uptime_hours}h {uptime_minutes}m"
+        
+        return {
+            "status": "healthy",
+            "timestamp": datetime.now().isoformat(),
+            "uptime_seconds": round(uptime_seconds, 2),
+            "uptime": uptime_str,
+            "server": {
+                "cpu_usage_percent": cpu_percent,
+                "memory_usage_percent": memory.percent,
+                "memory_available_mb": round(memory.available / (1024 * 1024), 2),
+                "disk_usage_percent": disk.percent,
+                "disk_free_gb": round(disk.free / (1024 * 1024 * 1024), 2)
+            },
+            "voices_loaded": len(available_voices),
+            "service": "chatterbox-tts",
+            "version": "1.0.0"
+        }
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={
+                "status": "unhealthy",
+                "error": str(e),
+                "timestamp": datetime.now().isoformat()
+            }
+        )
+
+@app.get("/api/swagger", response_class=HTMLResponse)
+async def swagger_ui():
+    """
+    Custom Swagger UI for API documentation
+    """
+    html_content = """
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Chatterbox TTS API - Documentation</title>
+        <link rel="stylesheet" type="text/css" href="https://unpkg.com/swagger-ui-dist@5.10.5/swagger-ui.css">
+        <style>
+            body { margin: 0; padding: 0; }
+            .topbar { display: none; }
+            .custom-header {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                padding: 20px;
+                text-align: center;
+            }
+            .custom-header h1 { margin: 0; font-size: 2em; }
+        </style>
+    </head>
+    <body>
+        <div class="custom-header">
+            <h1>🎙️ Chatterbox TTS API Documentation</h1>
+            <p>AI-Powered Text-to-Speech API</p>
+        </div>
+        <div id="swagger-ui"></div>
+        <script src="https://unpkg.com/swagger-ui-dist@5.10.5/swagger-ui-bundle.js"></script>
+        <script src="https://unpkg.com/swagger-ui-dist@5.10.5/swagger-ui-standalone-preset.js"></script>
+        <script>
+            window.onload = function() {
+                const spec = {
+                    "openapi": "3.0.3",
+                    "info": {
+                        "title": "Chatterbox TTS API",
+                        "version": "1.0.0",
+                        "description": "AI-powered Text-to-Speech with multiple voices and languages"
+                    },
+                    "servers": [{"url": window.location.origin}],
+                    "paths": {
+                        "/health": {
+                            "get": {
+                                "summary": "Health Check",
+                                "description": "Check server health and get system stats",
+                                "tags": ["Monitoring"],
+                                "responses": {
+                                    "200": {
+                                        "description": "Server is healthy",
+                                        "content": {
+                                            "application/json": {
+                                                "example": {
+                                                    "status": "healthy",
+                                                    "uptime": "2h 30m",
+                                                    "voices_loaded": 15
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "/api/predict": {
+                            "post": {
+                                "summary": "Generate English TTS",
+                                "tags": ["Text-to-Speech"],
+                                "requestBody": {
+                                    "required": true,
+                                    "content": {
+                                        "application/json": {
+                                            "schema": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "data": {
+                                                        "type": "array",
+                                                        "items": {},
+                                                        "example": ["Hello world", "Morgan Freeman_male", 1.0, 0.7, 42, 1.0, 0.1, 0.9, 1.0]
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                                "responses": {
+                                    "200": {
+                                        "description": "Audio generated successfully",
+                                        "content": {
+                                            "application/json": {
+                                                "example": {
+                                                    "data": [{
+                                                        "url": "http://example.com/audio.wav",
+                                                        "name": "audio.wav"
+                                                    }]
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                };
+                
+                SwaggerUIBundle({
+                    spec: spec,
+                    dom_id: '#swagger-ui',
+                    deepLinking: true,
+                    presets: [SwaggerUIBundle.presets.apis, SwaggerUIStandalonePreset],
+                    layout: "BaseLayout"
+                });
+            };
+        </script>
+    </body>
+    </html>
+    """
+    return HTMLResponse(content=html_content)
+
+@app.get("/", response_class=JSONResponse)
+async def root():
+    """
+    Root endpoint - API information
+    """
+    return {
+        "service": "Chatterbox TTS",
+        "version": "1.0.0",
+        "status": "running",
+        "endpoints": {
+            "health": "/health",
+            "swagger": "/api/swagger",
+            "gradio_api": "/api/docs",
+            "tts": "/api/predict",
+            "multilingual": "/api/multilingual",
+            "voice_conversion": "/api/convert_voice"
+        },
+        "documentation": "/api/swagger"
+    }
 
 # ---------------------------
 # Main Application
@@ -249,16 +450,24 @@ if __name__ == "__main__":
     PORT = int(os.getenv("GRADIO_SERVER_PORT", "7860"))
     HOST = os.getenv("GRADIO_SERVER_NAME", "0.0.0.0")
     
-    demo.queue(
-        max_size=50,
-        default_concurrency_limit=3,  # Adjust based on your server capacity
-    ).launch(
-        server_name=HOST,  # Listen on all interfaces
-        server_port=PORT,  # Use environment variable or default
-        share=False,  # Disable public sharing
-        show_error=True,
-        # Uncomment to add authentication:
-        # auth=("admin", "your_secure_password"),
-        # For API access:
-        show_api=True,  # Enable API documentation
+    # Mount Gradio app on FastAPI
+    demo_app = gr.mount_gradio_app(app, demo, path="/")
+    
+    # Launch with uvicorn
+    import uvicorn
+    
+    print("=" * 60)
+    print("🎙️  Chatterbox TTS Server Starting...")
+    print("=" * 60)
+    print(f"📍 Server: http://{HOST}:{PORT}")
+    print(f"🏥 Health Check: http://{HOST}:{PORT}/health")
+    print(f"📖 API Docs (Swagger): http://{HOST}:{PORT}/api/swagger")
+    print(f"📚 Gradio API Docs: http://{HOST}:{PORT}/api/docs")
+    print("=" * 60)
+    
+    uvicorn.run(
+        demo_app,
+        host=HOST,
+        port=PORT,
+        log_level="info"
     )
