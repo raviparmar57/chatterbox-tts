@@ -245,13 +245,16 @@ with gr.Blocks(title="Chatterbox TTS Enhanced", theme=gr.themes.Soft()) as demo:
 
 
 if __name__ == "__main__":
-    # Production configuration
+    # Production configuration with environment variable support
+    PORT = int(os.getenv("GRADIO_SERVER_PORT", "7860"))
+    HOST = os.getenv("GRADIO_SERVER_NAME", "0.0.0.0")
+    
     demo.queue(
         max_size=50,
         default_concurrency_limit=3,  # Adjust based on your server capacity
     ).launch(
-        server_name="0.0.0.0",  # Listen on all interfaces
-        server_port=7860,  # Default Gradio port
+        server_name=HOST,  # Listen on all interfaces
+        server_port=PORT,  # Use environment variable or default
         share=False,  # Disable public sharing
         show_error=True,
         # Uncomment to add authentication:

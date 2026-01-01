@@ -1,0 +1,3 @@
+# S2I Environment Configuration
+ENABLE_PIPENV=false
+UPGRADE_PIP_TO_LATEST=true
