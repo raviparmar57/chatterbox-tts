@@ -254,7 +254,6 @@ if __name__ == "__main__":
         server_port=7860,  # Default Gradio port
         share=False,  # Disable public sharing
         show_error=True,
-        enable_queue=True,
         # Uncomment to add authentication:
         # auth=("admin", "your_secure_password"),
         # For API access:
