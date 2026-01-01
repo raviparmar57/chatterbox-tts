@@ -4,14 +4,10 @@ Chatterbox TTS Enhanced - Production Deployment
 import sys
 import os
 
-# Add src directory and project root to sys.path
+# Project root for relative paths
 project_root = os.path.dirname(os.path.abspath(__file__))
 if project_root not in sys.path:
     sys.path.append(project_root)
-
-src_path = os.path.join(project_root, "src")
-if src_path not in sys.path:
-    sys.path.append(src_path)
 
 import gradio as gr
 from modules.config import LANGUAGE_CONFIG, SUPPORTED_LANGUAGES
